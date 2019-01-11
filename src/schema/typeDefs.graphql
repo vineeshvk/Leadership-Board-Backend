@@ -1,0 +1,28 @@
+type Query {
+	test(name: String): String
+}
+
+type Mutation {
+	login(userName: String!, password: String!): AuthResponse!
+	register(
+		userName: String!
+		password: String!
+		name: String
+		role: String
+	): AuthResponse!
+
+}
+
+type AuthResponse {
+	id: String
+	name: String
+	userName: String
+	errors: [Error!]
+}
+
+
+type Error {
+	path: String
+	errorCode: String
+	message: String
+}
