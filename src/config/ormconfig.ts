@@ -1,5 +1,8 @@
 import { ConnectionOptions } from 'typeorm';
-import { User } from '../entity/User';
+import { Faculty } from '../entity/Faculty';
+import { Course } from '../entity/Course';
+import { Student } from '../entity/Student';
+import { Admin } from '../entity/Admin';
 
 const docker = {
 	host: 'postgres',
@@ -29,7 +32,7 @@ export const dbconfig: ConnectionOptions = {
 	type: 'postgres',
 	synchronize: true,
 	logging: false,
-	entities: [User],
+	entities: [Faculty,Course,Student,Admin],
 	dropSchema:false,
 	migrations: ['src/migration/**/*.ts'],
 	subscribers: ['src/subscriber/**/*.ts'],

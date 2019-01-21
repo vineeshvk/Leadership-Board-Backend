@@ -3,19 +3,24 @@ import {
 	PrimaryGeneratedColumn,
 	Column,
 	BaseEntity,
+	OneToMany
 } from 'typeorm';
+import { Course } from './Course';
 
 @Entity()
-export class User extends BaseEntity {
+export class Faculty extends BaseEntity {
 	@PrimaryGeneratedColumn('uuid')
 	id: string;
 
 	@Column({ unique: true })
-	userName: string;
+	username: string;
 
 	@Column()
 	password: string;
 
 	@Column()
 	name: string;
+
+	@OneToMany(type => Course, course => course.faculty)
+	courses: Course[];
 }

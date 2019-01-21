@@ -1,19 +1,20 @@
 //User Resolver
-import { User } from '../../entity/User';
+import { Faculty } from '../../entity/Faculty';
 import { hash, compare } from 'bcryptjs';
 import {
 	USER_EXISTS,
 	USER_NOT_EXISTS,
-	PASSWORD_INVALID,
+	PASSWORD_INVALID
 } from '../../config/Errors';
 
 const resolvers = {
 	Query: {
-		test
+		test,
+		viewFaculties
 	},
 	Mutation: {
 		register,
-		login,
+		login
 	}
 };
 
@@ -22,53 +23,54 @@ function test() {
 	return 'testing';
 }
 
+async function viewFaculties(_, {}) {
+	const faculties = await Faculty.find({});
+	return faculties;
+}
+
 //Mutation
 
 /* ------------REGISTER--------------- */
 
 type registerArgsType = {
-	userName: string;
+	username: string;
 	password: string;
 	name: string;
 };
 
 async function register(_, args: registerArgsType) {
-	const userExist = await checkUserExists({ userName: args.userName });
+	const userExist = await checkUserExists({ username: args.username });
 	if (userExist) return { errors: [USER_EXISTS] };
 	return await createUser(args);
 }
 
-const createUser = async ({
-	userName,
-	password,
-	name,
-}: registerArgsType) => {
+const createUser = async ({ username, password, name }: registerArgsType) => {
 	const hashedPassword = await hash(password, 10);
-	const user = await User.create({
-		userName,
+	const user = await Faculty.create({
+		username,
 		password: hashedPassword,
-		name,
+		name
 	});
 	await user.save();
 	return {
 		id: user.id,
 		name: user.name,
-		userName: user.userName
+		username: user.username
 	};
 };
 
-const checkUserExists = async (value: { id?: string; userName?: string }) => {
-	const userExist = await User.findOne(value);
+const checkUserExists = async (value: { id?: string; username?: string }) => {
+	const userExist = await Faculty.findOne(value);
 	return userExist;
 };
 
 /* ---------------LOGIN----------------- */
 type loginArgsType = {
-	userName: string;
+	username: string;
 	password: string;
 };
-async function login(_, { userName, password }: loginArgsType) {
-	const user = await checkUserExists({ userName });
+async function login(_, { username, password }: loginArgsType) {
+	const user = await checkUserExists({ username });
 	if (!user) return { errors: [USER_NOT_EXISTS] };
 
 	const validPassword = await compare(password, user.password);
@@ -77,7 +79,7 @@ async function login(_, { userName, password }: loginArgsType) {
 	return {
 		id: user.id,
 		name: user.name,
-		userName: user.userName
+		username: user.username
 	};
 }
 

@@ -1,7 +1,8 @@
-import { ApolloServer } from 'apollo-server';
+import { ApolloServer, UserInputError } from 'apollo-server';
 import { createConnection } from 'typeorm';
 import schema from '../schema';
 import { dbconfig } from '../config/ormconfig';
+import { Admin } from '../entity/Admin';
 
 export async function startServer(port: string) {
 	const server = new ApolloServer({ schema });
@@ -13,6 +14,7 @@ export async function startServer(port: string) {
 			server
 				.listen(port)
 				.then(({ url }) => console.log(`☁️ connected at ${url}... ☁️`));
+			createAdmin();
 			break;
 		} catch (e) {
 			retry--;
@@ -20,5 +22,15 @@ export async function startServer(port: string) {
 			console.log(`${retry} retries remaining`);
 			await new Promise(res => setTimeout(res, 5000));
 		}
+	}
+}
+
+async function createAdmin() {
+	const admin = await Admin.findOne({ username: 'admin' });
+	if (!admin) {
+		const newadmin = await Admin.create({
+			username: 'admin',
+			password: 'admin'
+		}).save();
 	}
 }

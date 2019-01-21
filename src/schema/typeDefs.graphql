@@ -1,25 +1,64 @@
 type Query {
 	test(name: String): String
+	viewStudents: [Student]
+	viewFaculties: [Faculty]
+	viewCourses: [Course]
 }
 
 type Mutation {
-	login(userName: String!, password: String!): AuthResponse!
-	register(
-		userName: String!
-		password: String!
-		name: String
-		role: String
-	): AuthResponse!
+	login(username: String!, password: String!): AuthResponse!
 
+	register(username: String!, password: String!, name: String): AuthResponse!
+
+	addStudent(
+		registerno: String!
+		name: String!
+		dob: String!
+		year: Int!
+		section: String!
+		adminId: String!
+	): String
+
+	addCourse(
+		coursename: String!
+		coursecode: String!
+		regulation: Int!
+		facultyId: String!
+		studentsId: [String!]
+		adminId: String!
+	): String
+}
+
+type Student {
+	id: String!
+	registerno: String!
+	name: String!
+	dob: String!
+	year: Int!
+	section: String!
+}
+
+type Faculty {
+	id: String!
+	username: String!
+	name: String!
+}
+
+type Course {
+	id: String!
+	coursename: String!
+	coursecode: String!
+	regulation: String!
+	faculty: Faculty!
+	students: [Student]
 }
 
 type AuthResponse {
 	id: String
 	name: String
-	userName: String
+	username: String
 	errors: [Error!]
 }
-
 
 type Error {
 	path: String
