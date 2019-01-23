@@ -33,3 +33,21 @@ export const ADMIN_NOT_EXISTS = createError(
 	'admin_not_exists',
 	"admin doesn't exists"
 );
+
+export const COURSE_NOT_FOUND = createError(
+	'add_record',
+	'course_not_found',
+	'Course not found'
+);
+
+export const FACULTY_NOT_FOUND = createError(
+	'add_record',
+	'faculty_not_found',
+	'Faculty not found'
+);
+
+export const STUDENT_NOT_FOUND = createError(
+	'add_record',
+	'student_not_found',
+	'Student not found'
+);

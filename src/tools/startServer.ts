@@ -1,8 +1,8 @@
-import { ApolloServer, UserInputError } from 'apollo-server';
+import { ApolloServer } from 'apollo-server';
 import { createConnection } from 'typeorm';
-import schema from '../schema';
 import { dbconfig } from '../config/ormconfig';
 import { Admin } from '../entity/Admin';
+import schema from '../schema';
 
 export async function startServer(port: string) {
 	const server = new ApolloServer({ schema });

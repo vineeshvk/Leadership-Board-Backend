@@ -1,5 +1,6 @@
-import { Student } from '../../entity/Student';
+import { NO_ACCESS } from '../../config/Errors';
 import { Admin } from '../../entity/Admin';
+import { Student } from '../../entity/Student';
 
 const resolvers = {
 	Query: {
@@ -13,6 +14,7 @@ const resolvers = {
 //Query
 async function viewStudents(_, {}) {
 	const students = await Student.find({});
+
 	return students;
 }
 //Mutation
@@ -29,14 +31,12 @@ async function addStudent(
 	{ registerno, name, year, dob, section, adminId }: addStudentTypes
 ) {
 	const admin = await Admin.findOne({ id: adminId });
-	if (!admin) {
-		return null;
-	}
+	if (!admin) return { errors: [NO_ACCESS] };
 
 	const student = Student.create({ registerno, name, year, dob, section });
 	await student.save();
 
-	return student.id;
+	return { id: student.id };
 }
 
 export default resolvers;

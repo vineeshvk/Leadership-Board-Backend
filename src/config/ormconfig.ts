@@ -3,6 +3,7 @@ import { Faculty } from '../entity/Faculty';
 import { Course } from '../entity/Course';
 import { Student } from '../entity/Student';
 import { Admin } from '../entity/Admin';
+import { LeadershipRecord } from '../entity/LeadershipRecord';
 
 const docker = {
 	host: 'postgres',
@@ -32,8 +33,8 @@ export const dbconfig: ConnectionOptions = {
 	type: 'postgres',
 	synchronize: true,
 	logging: false,
-	entities: [Faculty,Course,Student,Admin],
-	dropSchema:false,
+	entities: [Faculty, Course, Student, Admin, LeadershipRecord],
+	dropSchema: false,
 	migrations: ['src/migration/**/*.ts'],
 	subscribers: ['src/subscriber/**/*.ts'],
 	cli: {

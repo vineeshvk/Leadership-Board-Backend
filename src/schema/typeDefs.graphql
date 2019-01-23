@@ -2,13 +2,21 @@ type Query {
 	test(name: String): String
 	viewStudents: [Student]
 	viewFaculties: [Faculty]
-	viewCourses: [Course]
+	viewCourses(facultyId: String): [Course]
+	viewRecords(csv: Boolean): RecordResponse
 }
 
 type Mutation {
-	login(username: String!, password: String!): AuthResponse!
+	adminLogin(username: String!, password: String!): AdminAuthResponse!
 
-	register(username: String!, password: String!, name: String): AuthResponse!
+	facultyLogin(username: String!, password: String!): AuthResponse!
+
+	addFaculty(
+		username: String!
+		password: String!
+		name: String!
+		adminId: String!
+	): AuthResponse!
 
 	addStudent(
 		registerno: String!
@@ -17,7 +25,7 @@ type Mutation {
 		year: Int!
 		section: String!
 		adminId: String!
-	): String
+	): AddResponse!
 
 	addCourse(
 		coursename: String!
@@ -26,7 +34,34 @@ type Mutation {
 		facultyId: String!
 		studentsId: [String!]
 		adminId: String!
-	): String
+	): AddResponse!
+
+	addRecord(
+		courseId: String!
+		facultyId: String!
+		studentId: String!
+		points: Int!
+		date: String!
+	): AddResponse!
+
+	deleteFaculty(facultyId: String!, adminId: String!): AddResponse!
+
+	deleteStudent(studentId: String!, adminId: String!): AddResponse!
+
+	deleteCourse(courseId: String!, adminId: String!): AddResponse!
+}
+
+type Record {
+	student: Student!
+	faculty: Faculty!
+	course: Course!
+	points: Int!
+	date: String!
+}
+
+type RecordResponse {
+	record: [Record]
+	csv: String
 }
 
 type Student {
@@ -48,9 +83,19 @@ type Course {
 	id: String!
 	coursename: String!
 	coursecode: String!
-	regulation: String!
+	regulation: Int!
 	faculty: Faculty!
 	students: [Student]
+}
+
+type AddResponse {
+	id: String
+	errors: [Error!]
+}
+
+type AdminAuthResponse {
+	id: String
+	errors: [Error!]
 }
 
 type AuthResponse {

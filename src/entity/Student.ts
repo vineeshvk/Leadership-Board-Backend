@@ -30,6 +30,5 @@ export class Student extends BaseEntity {
 	section: string;
 
 	@ManyToMany(type => Course, course => course.students)
-	@JoinTable()
 	courses: Course[];
 }

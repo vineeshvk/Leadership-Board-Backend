@@ -4,7 +4,8 @@ import {
 	Column,
 	BaseEntity,
 	ManyToOne,
-	ManyToMany
+	ManyToMany,
+	JoinTable
 } from 'typeorm';
 import { Faculty } from './Faculty';
 import { Student } from './Student';
@@ -14,18 +15,19 @@ export class Course extends BaseEntity {
 	@PrimaryGeneratedColumn('uuid')
 	id: string;
 
-	@Column({ unique: true })
+	@Column()
 	coursename: string;
 
 	@Column()
 	coursecode: string;
 
 	@Column()
-	regulation: string;
+	regulation: number;
 
 	@ManyToOne(type => Faculty, faculty => faculty.courses)
 	faculty: Faculty;
 
 	@ManyToMany(type => Student, student => student.courses)
+	@JoinTable()
 	students: Student[];
 }
