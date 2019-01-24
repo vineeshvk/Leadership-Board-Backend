@@ -51,3 +51,9 @@ export const STUDENT_NOT_FOUND = createError(
 	'student_not_found',
 	'Student not found'
 );
+
+export const SOMETHING_WRONG = createError(
+	'cs_entry',
+	'something_wrong',
+	'Something went wrong'
+);

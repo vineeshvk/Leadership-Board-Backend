@@ -60,7 +60,7 @@ type Record {
 }
 
 type RecordResponse {
-	record: [Record]
+	records: [Record]
 	csv: String
 }
 

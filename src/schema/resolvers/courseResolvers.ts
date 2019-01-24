@@ -1,5 +1,11 @@
 import { getRepository } from 'typeorm';
-import { COURSE_NOT_FOUND, FACULTY_NOT_FOUND, NO_ACCESS, STUDENT_NOT_FOUND } from '../../config/Errors';
+import {
+	COURSE_NOT_FOUND,
+	FACULTY_NOT_FOUND,
+	NO_ACCESS,
+	SOMETHING_WRONG,
+	STUDENT_NOT_FOUND
+} from '../../config/Errors';
 import { Admin } from '../../entity/Admin';
 import { Course } from '../../entity/Course';
 import { Faculty } from '../../entity/Faculty';
@@ -7,8 +13,7 @@ import { Student } from '../../entity/Student';
 
 const resolvers = {
 	Query: {
-		viewCourses,
-	
+		viewCourses
 	},
 	Mutation: {
 		addCourse,
@@ -19,18 +24,21 @@ const resolvers = {
 //Queries
 /* -------------------VIEW_COURSES----------------------------- */
 async function viewCourses(_, { facultyId }: { facultyId: string }) {
-	const courses = await getRepository(Course)
-		.createQueryBuilder('course')
-		.leftJoinAndSelect('course.faculty', 'faculty')
-		.leftJoinAndSelect('course.students', 'students')
-		.getMany();
+	try {
+		const courses = await getRepository(Course)
+			.createQueryBuilder('course')
+			.leftJoinAndSelect('course.faculty', 'faculty')
+			.leftJoinAndSelect('course.students', 'students')
+			.getMany();
 
-	if (facultyId) {
-		return courses.filter(course => course.faculty.id === facultyId);
+		if (facultyId) {
+			return courses.filter(course => course.faculty.id === facultyId);
+		}
+		return courses;
+	} catch (e) {
+		return { errors: [SOMETHING_WRONG] };
 	}
-	return courses;
 }
-
 
 //Mutations
 /* --------------------ADD_COURSE-------------------------- */
@@ -53,24 +61,28 @@ async function addCourse(
 		facultyId
 	}: addCourseArgTypes
 ) {
-	const admin = await Admin.findOne({ id: adminId });
-	if (!admin) return { errors: [NO_ACCESS] };
+	try {
+		const admin = await Admin.findOne({ id: adminId });
+		if (!admin) return { errors: [NO_ACCESS] };
 
-	const students = await getAllStudents(studentsId);
-	if (!students) return { errors: [STUDENT_NOT_FOUND] };
+		const students = await getAllStudents(studentsId);
+		if (!students) return { errors: [STUDENT_NOT_FOUND] };
 
-	const faculty = await Faculty.findOne({ id: facultyId });
-	if (!faculty) return { errors: [FACULTY_NOT_FOUND] };
+		const faculty = await Faculty.findOne({ id: facultyId });
+		if (!faculty) return { errors: [FACULTY_NOT_FOUND] };
 
-	const course = Course.create({
-		coursename,
-		coursecode,
-		regulation,
-		faculty,
-		students
-	});
-	await course.save();
-	return { id: course.id };
+		const course = Course.create({
+			coursename,
+			coursecode,
+			regulation,
+			faculty,
+			students
+		});
+		await course.save();
+		return { id: course.id };
+	} catch (e) {
+		return { errors: [SOMETHING_WRONG] };
+	}
 }
 
 const getAllStudents = async (studentsId: string[]) => {
@@ -89,14 +101,18 @@ type deleteCourseArgsTypes = {
 	adminId: string;
 };
 async function deleteCourse(_, { courseId, adminId }: deleteCourseArgsTypes) {
-	const admin = await Admin.findOne({ id: adminId });
-	if (!admin) return { errors: [NO_ACCESS] };
+	try {
+		const admin = await Admin.findOne({ id: adminId });
+		if (!admin) return { errors: [NO_ACCESS] };
 
-	const course = await Course.findOne({ id: courseId });
-	if (!course) return { errors: [COURSE_NOT_FOUND] };
+		const course = await Course.findOne({ id: courseId });
+		if (!course) return { errors: [COURSE_NOT_FOUND] };
 
-	await course.remove();
-	return { id: course.id };
+		await course.remove();
+		return { id: course.id };
+	} catch (e) {
+		return { errors: [SOMETHING_WRONG] };
+	}
 }
 
 export default resolvers;

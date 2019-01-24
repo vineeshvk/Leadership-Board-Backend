@@ -1,5 +1,9 @@
+import {
+	ADMIN_NOT_EXISTS,
+	PASSWORD_INVALID,
+	SOMETHING_WRONG
+} from '../../config/Errors';
 import { Admin } from '../../entity/Admin';
-import { ADMIN_NOT_EXISTS, PASSWORD_INVALID } from '../../config/Errors';
 
 const resolvers = {
 	Query: {},
@@ -15,12 +19,16 @@ type adminLoginArgsType = {
 	password: string;
 };
 async function adminLogin(_, { username, password }: adminLoginArgsType) {
-	const admin = await Admin.findOne({ username });
+	try {
+		const admin = await Admin.findOne({ username });
 
-	if (!admin) return { errors: [ADMIN_NOT_EXISTS] };
+		if (!admin) return { errors: [ADMIN_NOT_EXISTS] };
 
-	if (admin.password !== password) return { errors: [PASSWORD_INVALID] };
+		if (admin.password !== password) return { errors: [PASSWORD_INVALID] };
 
-	return { id: admin.id };
+		return { id: admin.id };
+	} catch (e) {
+		return { errors: [SOMETHING_WRONG] };
+	}
 }
 export default resolvers;

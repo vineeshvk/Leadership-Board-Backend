@@ -1,6 +1,13 @@
 //User Resolver
 import { compare, hash } from 'bcryptjs';
-import { FACULTY_NOT_FOUND, NO_ACCESS, PASSWORD_INVALID, USER_EXISTS, USER_NOT_EXISTS } from '../../config/Errors';
+import {
+	FACULTY_NOT_FOUND,
+	NO_ACCESS,
+	PASSWORD_INVALID,
+	SOMETHING_WRONG,
+	USER_EXISTS,
+	USER_NOT_EXISTS
+} from '../../config/Errors';
 import { Admin } from '../../entity/Admin';
 import { Faculty } from '../../entity/Faculty';
 
@@ -12,7 +19,7 @@ const resolvers = {
 	Mutation: {
 		addFaculty,
 		facultyLogin,
-		
+		deleteFaculty
 	}
 };
 
@@ -22,8 +29,12 @@ function test() {
 }
 
 async function viewFaculties(_, {}) {
-	const faculties = await Faculty.find({});
-	return faculties;
+	try {
+		const faculties = await Faculty.find({});
+		return faculties;
+	} catch (e) {
+		return { errors: [SOMETHING_WRONG] };
+	}
 }
 
 //Mutation
@@ -37,10 +48,13 @@ type addFacultyArgsType = {
 };
 
 async function addFaculty(_, args: addFacultyArgsType) {
-	
-	const userExist = await checkUserExists({ username: args.username });
-	if (userExist) return { errors: [USER_EXISTS] };
-	return await createUser(args);
+	try {
+		const userExist = await checkUserExists({ username: args.username });
+		if (userExist) return { errors: [USER_EXISTS] };
+		return await createUser(args);
+	} catch (e) {
+		return { errors: [SOMETHING_WRONG] };
+	}
 }
 
 const createUser = async ({ username, password, name }: addFacultyArgsType) => {
@@ -69,17 +83,21 @@ type facultyLoginArgsType = {
 	password: string;
 };
 async function facultyLogin(_, { username, password }: facultyLoginArgsType) {
-	const user = await checkUserExists({ username });
-	if (!user) return { errors: [USER_NOT_EXISTS] };
+	try {
+		const user = await checkUserExists({ username });
+		if (!user) return { errors: [USER_NOT_EXISTS] };
 
-	const validPassword = await compare(password, user.password);
-	if (!validPassword) return { errors: [PASSWORD_INVALID] };
+		const validPassword = await compare(password, user.password);
+		if (!validPassword) return { errors: [PASSWORD_INVALID] };
 
-	return {
-		id: user.id,
-		name: user.name,
-		username: user.username
-	};
+		return {
+			id: user.id,
+			name: user.name,
+			username: user.username
+		};
+	} catch (e) {
+		return { errors: [SOMETHING_WRONG] };
+	}
 }
 
 /* ---------------DELETE_FACULTY--------------------- */
@@ -88,14 +106,21 @@ type deleteFacultyArgsTypes = {
 	facultyId: string;
 	adminId: string;
 };
-async function deleteFaculty(_, { facultyId, adminId }: deleteFacultyArgsTypes) {
-	const admin = await Admin.findOne({ id: adminId });
-	if (!admin) return { errors: [NO_ACCESS] };
+async function deleteFaculty(
+	_,
+	{ facultyId, adminId }: deleteFacultyArgsTypes
+) {
+	try {
+		const admin = await Admin.findOne({ id: adminId });
+		if (!admin) return { errors: [NO_ACCESS] };
 
-	const faculty = await Faculty.findOne({ id: facultyId });
-	if (!faculty) return { errors: [FACULTY_NOT_FOUND] };
+		const faculty = await Faculty.findOne({ id: facultyId });
+		if (!faculty) return { errors: [FACULTY_NOT_FOUND] };
 
-	await faculty.remove();
-	return { id: faculty.id };
+		await faculty.remove();
+		return { id: faculty.id };
+	} catch (e) {
+		return { errors: [SOMETHING_WRONG] };
+	}
 }
 export default resolvers;
