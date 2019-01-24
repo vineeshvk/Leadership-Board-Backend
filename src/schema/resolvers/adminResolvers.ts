@@ -28,7 +28,7 @@ async function adminLogin(_, { username, password }: adminLoginArgsType) {
 
 		return { id: admin.id };
 	} catch (e) {
-		return { errors: [SOMETHING_WRONG] };
+		return { errors: [{ ...SOMETHING_WRONG, message: `${e}` }] };
 	}
 }
 export default resolvers;

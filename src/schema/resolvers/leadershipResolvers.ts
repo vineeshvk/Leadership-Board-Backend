@@ -15,25 +15,38 @@ const resolvers = {
 	Mutation: { addRecord }
 };
 //Query
-async function viewRecords(_, { csv }) {
+async function viewRecords(_, { csv, date, coursename, facultyId }) {
 	try {
-		const records = await getRepository(LeadershipRecord)
+		const recordRepo = await getRepository(LeadershipRecord)
 			.createQueryBuilder('records')
 			.leftJoinAndSelect('records.faculty', 'faculty')
 			.leftJoinAndSelect('records.course', 'course')
 			.leftJoinAndSelect('records.student', 'student')
 			.getMany();
 
+		let records = recordRepo;
+		if (facultyId) {
+			records = records.filter(record => record.faculty.id === facultyId);
+		}
+		if (date) {
+			records = records.filter(record => record.date === date);
+		}
+		if (coursename) {
+			records = records.filter(
+				record => record.course.coursename === coursename
+			);
+		}
+
 		if (csv) {
 			let allRecords: string =
-				'Date,CourseCode,CourseName,RegisterNumber,Name,Points';
+				'Date,CourseCode,CourseName,FacultyName,RegisterNumber,StudentName,Points';
 
 			records.forEach(record => {
-				allRecords += `${record.date},${record.course.coursecode},${
+				allRecords += `\n${record.date},${record.course.coursecode},${
 					record.course.coursename
-				},${record.student.registerno},${record.faculty.name},${
-					record.points
-				}\n`;
+				},${record.faculty.name},${record.student.registerno},${
+					record.student.name
+				},${record.points}`;
 			});
 
 			return { csv: allRecords };
@@ -41,7 +54,7 @@ async function viewRecords(_, { csv }) {
 
 		return { records };
 	} catch (e) {
-		return { errors: [SOMETHING_WRONG] };
+		return { errors: [{ ...SOMETHING_WRONG, message: `${e}` }] };
 	}
 }
 
@@ -80,7 +93,7 @@ async function addRecord(
 
 		return { id: record.id };
 	} catch (e) {
-		return { errors: [SOMETHING_WRONG] };
+		return { errors: [{ ...SOMETHING_WRONG, message: `${e}` }] };
 	}
 }
 

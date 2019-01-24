@@ -3,7 +3,12 @@ type Query {
 	viewStudents: [Student]
 	viewFaculties: [Faculty]
 	viewCourses(facultyId: String): [Course]
-	viewRecords(csv: Boolean): RecordResponse
+	viewRecords(
+		csv: Boolean
+		date: String
+		facultyId: String
+		coursename: String
+	): RecordResponse
 }
 
 type Mutation {

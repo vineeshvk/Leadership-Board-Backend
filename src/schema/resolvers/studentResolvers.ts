@@ -1,7 +1,8 @@
 import {
 	NO_ACCESS,
 	STUDENT_NOT_FOUND,
-	SOMETHING_WRONG
+	SOMETHING_WRONG,
+	USER_EXISTS
 } from '../../config/Errors';
 import { Admin } from '../../entity/Admin';
 import { Student } from '../../entity/Student';
@@ -43,12 +44,15 @@ async function addStudent(
 		const admin = await Admin.findOne({ id: adminId });
 		if (!admin) return { errors: [NO_ACCESS] };
 
+		const studentExist = await Student.findOne({ registerno });
+		if (studentExist) return { errors: [USER_EXISTS] };
+
 		const student = Student.create({ registerno, name, year, dob, section });
 		await student.save();
 
 		return { id: student.id };
 	} catch (e) {
-		return { errors: [SOMETHING_WRONG] };
+		return { errors: [{ ...SOMETHING_WRONG, message: `${e}` }] };
 	}
 }
 
@@ -70,7 +74,7 @@ async function deleteStudent(
 		await student.remove();
 		return { id: student.id };
 	} catch (e) {
-		return { errors: [SOMETHING_WRONG] };
+		return { errors: [{ ...SOMETHING_WRONG, message: `${e}` }] };
 	}
 }
 

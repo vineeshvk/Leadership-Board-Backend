@@ -33,7 +33,7 @@ async function viewFaculties(_, {}) {
 		const faculties = await Faculty.find({});
 		return faculties;
 	} catch (e) {
-		return { errors: [SOMETHING_WRONG] };
+		return { errors: [{ ...SOMETHING_WRONG, message: `${e}` }] };
 	}
 }
 
@@ -53,7 +53,7 @@ async function addFaculty(_, args: addFacultyArgsType) {
 		if (userExist) return { errors: [USER_EXISTS] };
 		return await createUser(args);
 	} catch (e) {
-		return { errors: [SOMETHING_WRONG] };
+		return { errors: [{ ...SOMETHING_WRONG, message: `${e}` }] };
 	}
 }
 
@@ -96,7 +96,7 @@ async function facultyLogin(_, { username, password }: facultyLoginArgsType) {
 			username: user.username
 		};
 	} catch (e) {
-		return { errors: [SOMETHING_WRONG] };
+		return { errors: [{ ...SOMETHING_WRONG, message: `${e}` }] };
 	}
 }
 
@@ -120,7 +120,7 @@ async function deleteFaculty(
 		await faculty.remove();
 		return { id: faculty.id };
 	} catch (e) {
-		return { errors: [SOMETHING_WRONG] };
+		return { errors: [{ ...SOMETHING_WRONG, message: `${e}` }] };
 	}
 }
 export default resolvers;

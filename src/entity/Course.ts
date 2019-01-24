@@ -24,10 +24,14 @@ export class Course extends BaseEntity {
 	@Column()
 	regulation: number;
 
-	@ManyToOne(type => Faculty, faculty => faculty.courses)
+	@ManyToOne(type => Faculty, faculty => faculty.courses, {
+		onDelete: 'CASCADE'
+	})
 	faculty: Faculty;
 
-	@ManyToMany(type => Student, student => student.courses)
+	@ManyToMany(type => Student, student => student.courses, {
+		onDelete: 'CASCADE'
+	})
 	@JoinTable()
 	students: Student[];
 }

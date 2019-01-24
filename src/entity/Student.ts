@@ -5,7 +5,8 @@ import {
 	BaseEntity,
 	ManyToOne,
 	ManyToMany,
-	JoinTable
+	JoinTable,
+	
 } from 'typeorm';
 import { Course } from './Course';
 
@@ -30,5 +31,6 @@ export class Student extends BaseEntity {
 	section: string;
 
 	@ManyToMany(type => Course, course => course.students)
+
 	courses: Course[];
 }

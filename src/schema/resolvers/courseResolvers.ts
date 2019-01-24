@@ -36,7 +36,7 @@ async function viewCourses(_, { facultyId }: { facultyId: string }) {
 		}
 		return courses;
 	} catch (e) {
-		return { errors: [SOMETHING_WRONG] };
+		return { errors: [{ ...SOMETHING_WRONG, message: `${e}` }] };
 	}
 }
 
@@ -81,7 +81,7 @@ async function addCourse(
 		await course.save();
 		return { id: course.id };
 	} catch (e) {
-		return { errors: [SOMETHING_WRONG] };
+		return { errors: [{ ...SOMETHING_WRONG, message: `${e}` }] };
 	}
 }
 
@@ -111,7 +111,7 @@ async function deleteCourse(_, { courseId, adminId }: deleteCourseArgsTypes) {
 		await course.remove();
 		return { id: course.id };
 	} catch (e) {
-		return { errors: [SOMETHING_WRONG] };
+		return { errors: [{ ...SOMETHING_WRONG, message: `${e}` }] };
 	}
 }
 

@@ -1,4 +1,11 @@
-import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+	BaseEntity,
+	Column,
+	Entity,
+	JoinColumn,
+	ManyToOne,
+	PrimaryGeneratedColumn
+} from 'typeorm';
 import { Course } from './Course';
 import { Faculty } from './Faculty';
 import { Student } from './Student';
@@ -8,15 +15,15 @@ export class LeadershipRecord extends BaseEntity {
 	@PrimaryGeneratedColumn('uuid')
 	id: string;
 
-	@ManyToOne(type => Course)
+	@ManyToOne(type => Course, { onDelete: 'CASCADE' })
 	@JoinColumn()
 	course: Course;
 
-	@ManyToOne(type => Faculty)
+	@ManyToOne(type => Faculty, { onDelete: 'CASCADE' })
 	@JoinColumn()
 	faculty: Faculty;
 
-	@ManyToOne(type => Student)
+	@ManyToOne(type => Student, { onDelete: 'CASCADE' })
 	@JoinColumn()
 	student: Student;
 
