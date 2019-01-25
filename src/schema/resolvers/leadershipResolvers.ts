@@ -1,17 +1,12 @@
 import { getRepository } from 'typeorm';
-import {
-	COURSE_NOT_FOUND,
-	FACULTY_NOT_FOUND,
-	STUDENT_NOT_FOUND,
-	SOMETHING_WRONG
-} from '../../config/Errors';
+import { COURSE_NOT_FOUND, FACULTY_NOT_FOUND, SOMETHING_WRONG, STUDENT_NOT_FOUND } from '../../config/Errors';
 import { Course } from '../../entity/Course';
 import { Faculty } from '../../entity/Faculty';
 import { LeadershipRecord } from '../../entity/LeadershipRecord';
 import { Student } from '../../entity/Student';
 
 const resolvers = {
-	Query: { viewRecords },
+	Query: { viewRecords,viewRecordsCSV:viewRecords },
 	Mutation: { addRecord }
 };
 //Query

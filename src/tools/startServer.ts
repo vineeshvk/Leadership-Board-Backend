@@ -1,36 +1,24 @@
-import { ApolloServer } from 'apollo-server';
-import { createConnection } from 'typeorm';
-import { dbconfig } from '../config/ormconfig';
-import { Admin } from '../entity/Admin';
+import { ApolloServer } from 'apollo-server-express';
+import * as express from 'express';
+import * as path from 'path';
 import schema from '../schema';
+import { connectDB } from './connectDB';
+import serveStatic = require('serve-static');
 
 export async function startServer(port: string) {
 	const server = new ApolloServer({ schema });
-	let retry = 10;
-	while (retry !== 0) {
-		try {
-			await createConnection(dbconfig);
-			console.log('🗄️ database connected 🗄️');
-			server
-				.listen(port)
-				.then(({ url }) => console.log(`☁️ connected at ${url}... ☁️`));
-			createAdmin();
-			break;
-		} catch (e) {
-			retry--;
-			console.log(e);
-			console.log(`${retry} retries remaining`);
-			await new Promise(res => setTimeout(res, 5000));
-		}
-	}
-}
+	const app = express();
 
-async function createAdmin() {
-	const admin = await Admin.findOne({ username: 'admin' });
-	if (!admin) {
-		const newadmin = await Admin.create({
-			username: 'admin',
-			password: 'admin'
-		}).save();
-	}
+	await connectDB(server);
+
+	server.applyMiddleware({ app, path: '/graphql' });
+	app.use(serveStatic(path.join('/usr/src/app', '/dist/')));
+
+	app.get('*', (req, res) => {
+		res.sendFile('/usr/src/app' + '/dist/index.html');
+	});
+
+	app.listen({ port: process.env.PORT || port }, () => {
+		console.log(`☁️ server connected ☁️`);
+	});
 }
