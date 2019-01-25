@@ -1,6 +1,5 @@
 import { ApolloServer } from 'apollo-server-express';
 import { createConnection } from 'typeorm';
-import { env_var } from '../../Environment';
 import { dbconfig } from '../config/ormconfig';
 import { Admin } from '../entity/Admin';
 
@@ -22,12 +21,12 @@ const connectDB = async (server: ApolloServer) => {
 };
 
 async function createAdmin() {
-	const admin = await Admin.findOne({ username: env_var.ADMIN_USERNAME });
+	const admin = await Admin.findOne({ username: 'admin' });
 	if (!admin) {
 		await Admin.delete({});
 		const newadmin = await Admin.create({
-			username: env_var.ADMIN_USERNAME,
-			password: env_var.ADMIN_PASSWORD
+			username: 'admin',
+			password: 'admin'
 		}).save();
 	}
 }
