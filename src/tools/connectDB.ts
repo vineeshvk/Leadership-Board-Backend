@@ -25,8 +25,8 @@ async function createAdmin() {
 	if (!admin) {
 		await Admin.delete({});
 		const newadmin = await Admin.create({
-			username: 'admin',
-			password: 'admin'
+			username: '',
+			password: ''
 		}).save();
 	}
 }
