@@ -4,7 +4,7 @@ FROM node:alpine as vue
 WORKDIR /usr/src/app
 COPY vue-leadership/package*.json ./
 
-RUN npm install
+RUN npm install -dd
 COPY vue-leadership ./
 
 RUN npm run build
@@ -16,7 +16,7 @@ FROM node:alpine as builder
 WORKDIR /usr/src/app
 COPY package*.json ./
 
-RUN npm install
+RUN npm install -dd
 
 COPY src ./
 COPY tsconfig.json ./
