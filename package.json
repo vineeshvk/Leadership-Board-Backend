@@ -16,7 +16,8 @@
     "graphql": "^14.0.2",
     "graphql-import": "^0.7.1",
     "pg": "^7.7.1",
-    "typeorm": "^0.2.11"
+    "typeorm": "^0.2.11",
+    "dotenv":"^6.2.0"
   },
   "scripts": {
     "start": "ts-node src/index.ts",

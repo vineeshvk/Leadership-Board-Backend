@@ -21,12 +21,12 @@ const connectDB = async (server: ApolloServer) => {
 };
 
 async function createAdmin() {
-	const admin = await Admin.findOne({ username: 'admin' });
+	const admin = await Admin.findOne({ username: process.env.ADMIN_USERNAME });
 	if (!admin) {
 		await Admin.delete({});
 		const newadmin = await Admin.create({
-			username: '',
-			password: ''
+			username: process.env.ADMIN_USERNAME,
+			password: process.env.ADMIN_PASSWORD
 		}).save();
 	}
 }

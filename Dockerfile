@@ -34,6 +34,7 @@ RUN npm install --production
 COPY --from=vue /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/build ./
 COPY src/schema/typeDefs.graphql ./schema/typeDefs.graphql
+COPY .env ./
 
 EXPOSE 5430
 

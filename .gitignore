@@ -6,4 +6,4 @@ tmp/
 temp/
 pgdata/
 vue-leadership
-Environment.ts
+.env
