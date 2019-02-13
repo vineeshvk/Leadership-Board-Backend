@@ -75,11 +75,13 @@ type Mutation {
 	deleteStudent(studentId: String!, adminId: String!): AddResponse!
 
 	deleteCourse(courseId: String!, adminId: String!): AddResponse!
+
+	deleteRecords(adminId:String!,recordId:String!):Boolean
 }
 
 type SOWResponse{
 	pdf:String
-	error:[Error!]
+	errors:[Error!]
 }
 
 type Record {

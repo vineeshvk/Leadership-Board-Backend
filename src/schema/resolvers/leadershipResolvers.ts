@@ -1,16 +1,29 @@
 import { Buffer } from 'buffer';
+import { writeFile } from 'fs';
 import * as PDFDocument from 'pdfkit';
 import { getRepository } from 'typeorm';
 import { promisify } from 'util';
-import { COURSE_NOT_FOUND, FACULTY_NOT_FOUND, SOMETHING_WRONG, STUDENT_NOT_FOUND } from '../../config/Errors';
+import {
+	ADMIN_NOT_EXISTS,
+	COURSE_NOT_FOUND,
+	FACULTY_NOT_FOUND,
+	NO_ACCESS,
+	SOMETHING_WRONG,
+	STUDENT_NOT_FOUND
+} from '../../config/Errors';
+import { Admin } from '../../entity/Admin';
 import { Course } from '../../entity/Course';
 import { Faculty } from '../../entity/Faculty';
 import { LeadershipRecord } from '../../entity/LeadershipRecord';
 import { Student } from '../../entity/Student';
 
 const resolvers = {
-	Query: { viewRecords, viewRecordsCSV: viewRecords, calculateStarOfWeek },
-	Mutation: { addRecord }
+	Query: {
+		viewRecords,
+		viewRecordsCSV: viewRecords,
+		calculateStarOfWeek
+	},
+	Mutation: { addRecord, deleteRecords }
 };
 
 //Query
@@ -96,26 +109,29 @@ async function calculateStarOfWeek(
 	_,
 	{ startDate, endDate, year, section }: calculateStarOfWeekArgTypes
 ) {
-	try {
-		let recordRepo = await getAllRecords();
+	let recordRepo = await getAllRecords();
 
-		const dateRange = getDaysArray(startDate, endDate);
+	const dateRange = getDaysArray(startDate, endDate);
 
-		recordRepo = filterRecords({ year, section }, recordRepo);
+	recordRepo = filterRecords({ year, section }, recordRepo);
+	let recordRepoDate = recordRepo.filter(record =>
+		dateRange.includes(record.date)
+	);
+	console.log('dateRepo', recordRepoDate);
 
-		dateRange.map(date => {
-			recordRepo = recordRepo.filter(record => record.date === date);
-		});
-
-		const combinedRecord = combineRecordsFunction(recordRepo)[0];
-		const convertToPDFAsync = promisify<any, { result: string }>(convertToPDF);
-
-		const { result } = await convertToPDFAsync(combinedRecord);
-		return {pdf:result};
+	if (recordRepoDate.length === 0) {
+		return {
+			errors: [{ ...SOMETHING_WRONG, message: `No Entries with in the dates` }]
+		};
 	}
-	catch (e) {
-		return { errors: [{ ...SOMETHING_WRONG, message: `${e}` }]}
-	}
+
+	const combinedRecord = combineRecordsFunction(recordRepoDate)[0];
+
+	const convertToPDFAsync = promisify<any, { result: string }>(convertToPDF);
+
+	const { result } = await convertToPDFAsync(combinedRecord);
+
+	return { pdf: result };
 }
 
 const getDaysArray = (start: string, end: string): string[] => {
@@ -179,26 +195,24 @@ const convertToPDF = (data: combineRecordType, callback) => {
 		.font('Helvetica-Bold')
 		.fontSize(15)
 		.text('STAR OF THE WEEK', 244, 210);
-	const base64Data = data.student.image.split('base64,');
-
-	require('fs').writeFile(
-		'sow.jpeg',
-		base64Data[1],
-		{ encoding: 'base64' },
-		function(err) {
-			console.log('File created', err);
-			doc.image('sow.jpeg', 390, 290, { width: 80 });
-			doc.end();
-		}
-	);
-	console.log('after');
 
 	doc.fontSize(10).text('(' + data.student.registerno + ')', 150, 330);
 	doc.fontSize(10).text(data.student.name, 250, 330);
 
-	doc.fontSize(40).text('CONGRATULATION', 120, 500);
+	doc.fontSize(40).text('CONGRATULATIONS', 119, 500);
 	doc.fontSize(10).text('Class Advisor', 100, 600);
 	doc.fontSize(10).text('HoD/Dean', 450, 600);
+
+	if (data.student.image) {
+		const base64Data = data.student.image.split('base64,');
+		writeFile('sow.jpeg', base64Data[1], { encoding: 'base64' }, function(err) {
+			console.log('File created', err);
+			doc.image('sow.jpeg', 390, 290, { width: 80 });
+			doc.end();
+		});
+	} else {
+		doc.end();
+	}
 
 	doc.on('end', () => {
 		const result = Buffer.concat(chunks);
@@ -245,4 +259,18 @@ async function addRecord(
 	}
 }
 
+/* -------------------------DELETE_ALL_RECORDS---------------------------- */
+async function deleteRecords(_, { adminId, recordId }) {
+	const admin = await Admin.findOne({ id: adminId });
+	if (!admin) return { errors: [ADMIN_NOT_EXISTS] };
+
+	if (!recordId) {
+		await LeadershipRecord.delete({});
+		return true;
+	}
+	const record = await LeadershipRecord.findOne({ id: recordId });
+
+	if (!record) return { errors: [NO_ACCESS] };
+	await record.remove();
+}
 export default resolvers;
