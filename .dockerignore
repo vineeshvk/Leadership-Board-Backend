@@ -2,3 +2,4 @@ node_modules/
 pgdata
 vue-leadership/node_modules
 vue-leadership/dist
+src/tools/SOW.pdf

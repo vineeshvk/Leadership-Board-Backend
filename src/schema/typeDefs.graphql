@@ -17,6 +17,13 @@ type Query {
 		facultyId: String
 		coursename: String
 	): CSVResponse
+
+	calculateStarOfWeek(
+		startDate: String!
+		endDate: String!
+		regulation: Int!
+		section: String!
+	): SOWResponse
 }
 
 type Mutation {
@@ -57,11 +64,22 @@ type Mutation {
 		date: String!
 	): AddResponse!
 
+	addStudentImage(
+		adminId: String!
+		studentId: String!
+		image: String!
+	): AddResponse!
+
 	deleteFaculty(facultyId: String!, adminId: String!): AddResponse!
 
 	deleteStudent(studentId: String!, adminId: String!): AddResponse!
 
 	deleteCourse(courseId: String!, adminId: String!): AddResponse!
+}
+
+type SOWResponse{
+	pdf:String
+	error:[Error!]
 }
 
 type Record {
@@ -88,6 +106,7 @@ type Student {
 	dob: String!
 	year: Int!
 	section: String!
+	image: String
 }
 
 type Faculty {

@@ -26,7 +26,7 @@ const deploy = {
 	extra: { ssl: true }
 };
 
-const config = process.env.DATABASE_URL ? deploy : docker;
+const config = process.env.DATABASE_URL ? deploy : dev;
 
 export const dbconfig: ConnectionOptions = {
 	...config,

@@ -1,4 +1,5 @@
 import { ApolloServer } from 'apollo-server-express';
+import * as bodyParser from 'body-parser';
 import * as express from 'express';
 import * as path from 'path';
 import schema from '../schema';
@@ -10,7 +11,7 @@ export async function startServer(port: string) {
 	const app = express();
 
 	await connectDB(server);
-
+	app.use(bodyParser({ limit: '10mb' }));
 	server.applyMiddleware({ app, path: '/graphql' });
 	app.use(serveStatic(path.join('/usr/src/app', '/dist/')));
 

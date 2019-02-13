@@ -1,7 +1,7 @@
 import {
 	NO_ACCESS,
-	STUDENT_NOT_FOUND,
 	SOMETHING_WRONG,
+	STUDENT_NOT_FOUND,
 	USER_EXISTS
 } from '../../config/Errors';
 import { Admin } from '../../entity/Admin';
@@ -13,7 +13,8 @@ const resolvers = {
 	},
 	Mutation: {
 		addStudent,
-		deleteStudent
+		deleteStudent,
+		addStudentImage
 	}
 };
 
@@ -28,6 +29,7 @@ async function viewStudents(_, {}) {
 	}
 }
 //Mutation
+/* ------------------------ADD_STUDENT------------------------- */
 type addStudentTypes = {
 	registerno: string;
 	name: string;
@@ -56,6 +58,9 @@ async function addStudent(
 	}
 }
 
+
+/* ------------------------DELETE_STUDENT------------------------- */
+
 type deleteStudentArgsTypes = {
 	studentId: string;
 	adminId: string;
@@ -75,6 +80,33 @@ async function deleteStudent(
 		return { id: student.id };
 	} catch (e) {
 		return { errors: [{ ...SOMETHING_WRONG, message: `${e}` }] };
+	}
+}
+
+/* ------------------------ADD_IMAGE_FOR_STUDENT------------------------- */
+
+type addStudentImageArgsTypes = {
+	adminId: string;
+	studentId: string;
+	image: string;
+};
+async function addStudentImage(
+	_,
+	{ adminId, studentId, image }: addStudentImageArgsTypes
+) {
+	try {
+		const admin = await Admin.findOne({ id: adminId });
+		if (!admin) return { errors: [NO_ACCESS] };
+
+		const student = await Student.findOne({ id: studentId });
+		if (!student) return { errors: [STUDENT_NOT_FOUND] };
+
+		student.image = image;
+		await student.save();
+
+		return { id: student.id };
+	} catch (e) {
+		return { errors: [{ ...SOMETHING_WRONG, message: `{e}` }] };
 	}
 }
 

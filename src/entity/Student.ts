@@ -1,12 +1,9 @@
 import {
-	Entity,
-	PrimaryGeneratedColumn,
-	Column,
 	BaseEntity,
-	ManyToOne,
+	Column,
+	Entity,
 	ManyToMany,
-	JoinTable,
-	
+	PrimaryGeneratedColumn
 } from 'typeorm';
 import { Course } from './Course';
 
@@ -31,6 +28,8 @@ export class Student extends BaseEntity {
 	section: string;
 
 	@ManyToMany(type => Course, course => course.students)
-
 	courses: Course[];
+
+	@Column({ nullable: true })
+	image: string;
 }
