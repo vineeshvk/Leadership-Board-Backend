@@ -117,7 +117,6 @@ async function calculateStarOfWeek(
 	let recordRepoDate = recordRepo.filter(record =>
 		dateRange.includes(record.date)
 	);
-	console.log('dateRepo', recordRepoDate);
 
 	if (recordRepoDate.length === 0) {
 		return {
@@ -129,7 +128,11 @@ async function calculateStarOfWeek(
 
 	const convertToPDFAsync = promisify<any, { result: string }>(convertToPDF);
 
-	const { result } = await convertToPDFAsync(combinedRecord);
+	const { result } = await convertToPDFAsync({
+		data: combinedRecord,
+		startDate,
+		endDate
+	});
 
 	return { pdf: result };
 }
@@ -176,41 +179,86 @@ const combineRecordsFunction = (
 	});
 };
 
-const convertToPDF = (data: combineRecordType, callback) => {
+type convertToPDFType = {
+	data: combineRecordType;
+	startDate: string;
+	endDate: string;
+};
+const convertToPDF = (
+	{ data, startDate, endDate }: convertToPDFType,
+	callback
+) => {
 	const doc = new PDFDocument();
 	let chunks = [];
 	doc.on('data', chunk => {
 		chunks.push(chunk);
 	});
+	doc.image('assets/snsct.png', 18, 33, { width: 60 });
+	doc.image('assets/snsorg.png', 493, 33, { height: 58 });
 
-	doc.fontSize(35).text('SNS College of Technology', 100);
+	doc
+		.font('Times-Roman')
+		.fontSize(24)
+		.text('SNS College of Technology', 145, 33, {
+			align: 'center',
+			width: 325
+		});
 	doc
 		.fontSize(18)
-		.text('Department of Computer Science & Engineering (UG & PG)', 60);
-	doc
-		.font('Helvetica-Bold')
-		.fontSize(15)
-		.text('LEADERSHIP BOARD', 240, 180);
-	doc
-		.font('Helvetica-Bold')
-		.fontSize(15)
-		.text('STAR OF THE WEEK', 244, 210);
+		.text('Coimbatore - 35', 145, 65, { width: 325, align: 'center' });
 
-	doc.fontSize(10).text('(' + data.student.registerno + ')', 150, 330);
-	doc.fontSize(10).text(data.student.name, 250, 330);
+	doc
+		.fontSize(18)
+		.text('Department of Computer Science & Engineering (UG & PG)', 18, 132, {
+			width: 570,
+			align: 'center'
+		});
+	doc
+		.font('Times-Bold')
+		.fontSize(18)
+		.text('LEADERSHIP BOARD', 18, 189, { width: 570, align: 'center' });
+	doc
+		.fontSize(18)
+		.text('STAR OF THE WEEK', 18, 222, { width: 570, align: 'center' });
+	doc
+		.font('Times-Roman')
+		.fontSize(18)
+		.text(`${startDate} to ${endDate}`, 18, 289, {
+			width: 570,
+			align: 'center'
+		});
+	doc.text('III CSE C', 18, 322, { width: 570, align: 'center' });
 
-	doc.fontSize(40).text('CONGRATULATIONS', 119, 500);
-	doc.fontSize(10).text('Class Advisor', 100, 600);
-	doc.fontSize(10).text('HoD/Dean', 450, 600);
+	doc
+		.font('Times-Bold')
+		.fontSize(18)
+		.text(data.student.name.toUpperCase(), 143, 410);
+
+	doc
+		.font('Times-Roman')
+		.fontSize(10)
+		.fontSize(18)
+		.text(data.student.registerno, 143, 440);
+
+	doc
+		.font('Times-BoldItalic')
+		.fontSize(36)
+		.text('Congratulations!', 18, 556, { align: 'center', width: 570 });
+	doc
+		.font('Times-Roman')
+		.fontSize(18)
+		.text('Class Advisor', 143, 650);
+	doc.fontSize(18).text('HoD/Dean', 381, 650);
 
 	if (data.student.image) {
 		const base64Data = data.student.image.split('base64,');
 		writeFile('sow.jpeg', base64Data[1], { encoding: 'base64' }, function(err) {
 			console.log('File created', err);
-			doc.image('sow.jpeg', 390, 290, { width: 80 });
+			doc.image('sow.jpeg', 350, 370, { width: 116 });
 			doc.end();
 		});
 	} else {
+		doc.image('assets/placeholder.png', 350, 370, { width: 116 });
 		doc.end();
 	}
 
