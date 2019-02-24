@@ -24,6 +24,10 @@ type Query {
 		regulation: Int!
 		section: String!
 	): SOWResponse
+
+	getStudentImage(studentId: String!): String
+
+	getStudentTotalMarks(studentId: String): [Student]
 }
 
 type Mutation {
@@ -70,18 +74,46 @@ type Mutation {
 		image: String!
 	): AddResponse!
 
+	editFaculty(
+		facultyId: String!
+		adminId: String!
+		password: String
+		username: String
+		name: String
+	): AddResponse!
+
+	editStudent(
+		adminId: String!
+		studentId: String!
+		registerno: String
+		name: String
+		dob: String
+		year: Int
+		section: String
+	): AddResponse!
+
+	editCourse(
+		adminId: String!
+		courseId: String!
+		coursename: String
+		coursecode: String
+		regulation: Int
+		facultyId: String
+		studentsId: [String]
+	): AddResponse!
+
 	deleteFaculty(facultyId: String!, adminId: String!): AddResponse!
 
 	deleteStudent(studentId: String!, adminId: String!): AddResponse!
 
 	deleteCourse(courseId: String!, adminId: String!): AddResponse!
 
-	deleteRecords(adminId:String!,recordId:String!):Boolean
+	deleteRecords(adminId: String!, recordId: String!): Boolean
 }
 
-type SOWResponse{
-	pdf:String
-	errors:[Error!]
+type SOWResponse {
+	pdf: String
+	errors: [Error!]
 }
 
 type Record {
@@ -90,6 +122,7 @@ type Record {
 	course: Course!
 	points: Int!
 	date: String!
+	id: String!
 }
 
 type CSVResponse {
@@ -108,7 +141,12 @@ type Student {
 	dob: String!
 	year: Int!
 	section: String!
-	image: String
+	totalMarks: TotalMarks
+	isSow:Boolean
+}
+type TotalMarks {
+	totalMarks: Int
+	id: String
 }
 
 type Faculty {
@@ -141,6 +179,7 @@ type AuthResponse {
 	name: String
 	username: String
 	errors: [Error!]
+	accountType: String
 }
 
 type Error {

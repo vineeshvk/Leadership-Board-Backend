@@ -1,9 +1,11 @@
 import { ConnectionOptions } from 'typeorm';
-import { Faculty } from '../entity/Faculty';
-import { Course } from '../entity/Course';
-import { Student } from '../entity/Student';
 import { Admin } from '../entity/Admin';
+import { Course } from '../entity/Course';
+import { Faculty } from '../entity/Faculty';
 import { LeadershipRecord } from '../entity/LeadershipRecord';
+import { Student } from '../entity/Student';
+import { StudentImage } from '../entity/StudentImage';
+import { StudentTotalMarks } from '../entity/StudentTotalMarks';
 
 const docker = {
 	host: 'postgres',
@@ -26,14 +28,22 @@ const deploy = {
 	extra: { ssl: true }
 };
 
-const config = process.env.DATABASE_URL ? deploy : dev;
+const config = process.env.DATABASE_URL ? deploy : docker;
 
 export const dbconfig: ConnectionOptions = {
 	...config,
 	type: 'postgres',
 	synchronize: true,
 	logging: false,
-	entities: [Faculty, Course, Student, Admin, LeadershipRecord],
+	entities: [
+		Faculty,
+		Course,
+		Student,
+		Admin,
+		LeadershipRecord,
+		StudentImage,
+		StudentTotalMarks
+	],
 	dropSchema: false,
 	migrations: ['src/migration/**/*.ts'],
 	subscribers: ['src/subscriber/**/*.ts'],

@@ -2,6 +2,7 @@ import { ApolloServer } from 'apollo-server-express';
 import { createConnection } from 'typeorm';
 import { dbconfig } from '../config/ormconfig';
 import { Admin } from '../entity/Admin';
+import { hash } from 'bcryptjs';
 
 const connectDB = async (server: ApolloServer) => {
 	let retry = 10;
@@ -23,10 +24,11 @@ const connectDB = async (server: ApolloServer) => {
 async function createAdmin() {
 	const admin = await Admin.findOne({ username: process.env.ADMIN_USERNAME });
 	if (!admin) {
+		const hashedPassword = await hash(process.env.ADMIN_PASSWORD, 10);
 		await Admin.delete({});
 		const newadmin = await Admin.create({
 			username: process.env.ADMIN_USERNAME,
-			password: process.env.ADMIN_PASSWORD
+			password: hashedPassword
 		}).save();
 	}
 }

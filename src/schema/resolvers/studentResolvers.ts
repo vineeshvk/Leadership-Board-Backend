@@ -6,15 +6,18 @@ import {
 } from '../../config/Errors';
 import { Admin } from '../../entity/Admin';
 import { Student } from '../../entity/Student';
+import { StudentImage } from '../../entity/StudentImage';
 
 const resolvers = {
 	Query: {
-		viewStudents
+		viewStudents,
+		getStudentImage
 	},
 	Mutation: {
 		addStudent,
 		deleteStudent,
-		addStudentImage
+		addStudentImage,
+		editStudent
 	}
 };
 
@@ -58,7 +61,6 @@ async function addStudent(
 	}
 }
 
-
 /* ------------------------DELETE_STUDENT------------------------- */
 
 type deleteStudentArgsTypes = {
@@ -83,6 +85,14 @@ async function deleteStudent(
 	}
 }
 
+/* ---------------------------GET_STUDENT_IMAGE------------------------------------ */
+
+async function getStudentImage(_, { studentId }) {
+	const studentImage = await StudentImage.findOne({ studentId });
+
+	return studentImage.image;
+}
+
 /* ------------------------ADD_IMAGE_FOR_STUDENT------------------------- */
 
 type addStudentImageArgsTypes = {
@@ -101,9 +111,51 @@ async function addStudentImage(
 		const student = await Student.findOne({ id: studentId });
 		if (!student) return { errors: [STUDENT_NOT_FOUND] };
 
-		student.image = image;
-		await student.save();
+		const studentImage = StudentImage.create({ image, studentId: student.id });
+		await studentImage.save();
 
+		return { id: student.id };
+	} catch (e) {
+		return { errors: [{ ...SOMETHING_WRONG, message: `${e}` }] };
+	}
+}
+
+/* ------------------------EDIT_STUDENT------------------------- */
+type editStudentArgsTypes = {
+	adminId: string;
+	studentId: string;
+	registerno?: string;
+	name?: string;
+	dob?: string;
+	year?: number;
+	section?: string;
+};
+async function editStudent(
+	_,
+	{
+		adminId,
+		studentId,
+		registerno,
+		name,
+		dob,
+		year,
+		section
+	}: editStudentArgsTypes
+) {
+	try {
+		const admin = await Admin.findOne({ id: adminId });
+		if (!admin) return { errors: [NO_ACCESS] };
+
+		const student = await Student.findOne({ id: studentId });
+		if (!student) return { errors: [STUDENT_NOT_FOUND] };
+
+		if (registerno) student.registerno = registerno;
+		if (name) student.name = name;
+		if (dob) student.dob = dob;
+		if (year) student.year = year;
+		if (section) student.section = section;
+
+		await student.save();
 		return { id: student.id };
 	} catch (e) {
 		return { errors: [{ ...SOMETHING_WRONG, message: `{e}` }] };

@@ -1,13 +1,10 @@
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
-export class Admin extends BaseEntity {
+export class StudentTotalMarks extends BaseEntity {
 	@PrimaryGeneratedColumn('uuid')
 	id: string;
 
-	@Column({ unique: true })
-	username: string;
-
-	@Column()
-	password: string;
+	@Column({ default: 0 })
+	totalMarks: number;
 }

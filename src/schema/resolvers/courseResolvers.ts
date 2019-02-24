@@ -17,7 +17,8 @@ const resolvers = {
 	},
 	Mutation: {
 		addCourse,
-		deleteCourse
+		deleteCourse,
+		editCourse
 	}
 };
 
@@ -112,6 +113,55 @@ async function deleteCourse(_, { courseId, adminId }: deleteCourseArgsTypes) {
 		return { id: course.id };
 	} catch (e) {
 		return { errors: [{ ...SOMETHING_WRONG, message: `${e}` }] };
+	}
+}
+
+/* ------------------------EDIT_COURSE----------------------------- */
+type editCourseArgTypes = {
+	adminId: string;
+	courseId: string;
+	coursename?: string;
+	coursecode?: string;
+	regulation?: number;
+	facultyId?: string;
+	studentsId?: string[];
+};
+async function editCourse(
+	_,
+	{
+		adminId,
+		courseId,
+		coursename,
+		coursecode,
+		regulation,
+		facultyId,
+		studentsId
+	}: editCourseArgTypes
+) {
+	try {
+		const admin = await Admin.findOne({ id: adminId });
+		if (!admin) return { errors: [NO_ACCESS] };
+
+		const course = await Course.findOne({ id: courseId });
+		if (!course) return { errors: [COURSE_NOT_FOUND] };
+
+		if (coursename) course.coursename = coursename;
+		if (coursecode) course.coursecode = coursecode;
+		if (regulation) course.regulation = regulation;
+
+		if (facultyId) {
+			const faculty = await Faculty.findOne({ id: facultyId });
+			course.faculty = faculty;
+		}
+
+		if (studentsId) {
+			const students = await getAllStudents(studentsId);
+			course.students = students;
+		}
+		await course.save();
+		return { id: course.id };
+	} catch (e) {
+		return { errors: [{ ...SOMETHING_WRONG, message: `{e}` }] };
 	}
 }
 
