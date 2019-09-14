@@ -50,6 +50,7 @@ type addCourseArgTypes = {
 	adminId: string;
 	studentsId: string[];
 	facultyId: string;
+	courseId?:string;
 };
 async function addCourse(
 	_,
@@ -59,7 +60,8 @@ async function addCourse(
 		regulation,
 		adminId,
 		studentsId,
-		facultyId
+		facultyId,
+		courseId
 	}: addCourseArgTypes
 ) {
 	try {
@@ -71,6 +73,20 @@ async function addCourse(
 
 		const faculty = await Faculty.findOne({ id: facultyId });
 		if (!faculty) return { errors: [FACULTY_NOT_FOUND] };
+
+		if(courseId){
+			const editCourse = await Course.findOne({id:courseId})
+			if(!editCourse) return {errors:[COURSE_NOT_FOUND]};
+
+			editCourse.coursename = coursename;
+			editCourse.coursecode = coursecode;
+			editCourse.regulation = regulation;
+			editCourse.students = students;
+			editCourse.faculty = faculty;
+			
+			await editCourse.save();
+			return {id:editCourse.id}
+		}
 
 		const course = Course.create({
 			coursename,

@@ -1,189 +1,197 @@
 type Query {
-	test(name: String): String
-	viewStudents: [Student]
-	viewFaculties: [Faculty]
-	viewCourses(facultyId: String): [Course]
+  test(name: String): String
+  viewStudents: [Student]
+  viewFaculties: [Faculty]
+  viewCourses(facultyId: String): [Course]
 
-	viewRecords(
-		csv: Boolean
-		date: String
-		facultyId: String
-		coursename: String
-	): RecordResponse
+  viewRecords(
+    csv: Boolean
+    date: String
+    facultyId: String
+    coursename: String
+  ): RecordResponse
 
-	viewRecordsCSV(
-		csv: Boolean
-		date: String
-		facultyId: String
-		coursename: String
-	): CSVResponse
+  viewRecordsCSV(
+    csv: Boolean
+    date: String
+    facultyId: String
+    coursename: String
+  ): CSVResponse
 
-	calculateStarOfWeek(
-		startDate: String!
-		endDate: String!
-		regulation: Int!
-		section: String!
-	): SOWResponse
+  calculateStarOfWeek(
+    startDate: String!
+    endDate: String!
+    year: Int!
+    section: String!
+  ): SOWResponse
 
-	getStudentImage(studentId: String!): String
+  getStudentImage(studentId: String!): String
 
-	getStudentTotalMarks(studentId: String): [Student]
+  getStudentTotalMarks(studentId: String): [Student]
+
+  getConsolidateMarks(
+    startDate: String!
+    endDate: String!
+    year: Int!
+    section: String!
+  ): String
 }
 
 type Mutation {
-	adminLogin(username: String!, password: String!): AdminAuthResponse!
+  adminLogin(username: String!, password: String!): AdminAuthResponse!
 
-	facultyLogin(username: String!, password: String!): AuthResponse!
+  facultyLogin(username: String!, password: String!): AuthResponse!
 
-	addFaculty(
-		username: String!
-		password: String!
-		name: String!
-		adminId: String!
-	): AuthResponse!
+  addFaculty(
+    username: String!
+    password: String!
+    name: String!
+    adminId: String!
+  ): AuthResponse!
 
-	addStudent(
-		registerno: String!
-		name: String!
-		dob: String!
-		year: Int!
-		section: String!
-		adminId: String!
-	): AddResponse!
+  addStudent(
+    registerno: String!
+    name: String!
+    dob: String!
+    year: Int!
+    section: String!
+    adminId: String!
+  ): AddResponse!
 
-	addCourse(
-		coursename: String!
-		coursecode: String!
-		regulation: Int!
-		facultyId: String!
-		studentsId: [String!]
-		adminId: String!
-	): AddResponse!
+  addCourse(
+    coursename: String!
+    coursecode: String!
+    regulation: Int!
+    facultyId: String!
+    studentsId: [String!]
+    adminId: String!
+    courseId: String
+  ): AddResponse!
 
-	addRecord(
-		courseId: String!
-		facultyId: String!
-		studentId: String!
-		points: Int!
-		date: String!
-	): AddResponse!
+  addRecord(
+    courseId: String!
+    facultyId: String!
+    studentId: String!
+    points: Int!
+    date: String!
+  ): AddResponse!
 
-	addStudentImage(
-		adminId: String!
-		studentId: String!
-		image: String!
-	): AddResponse!
+  addStudentImage(
+    adminId: String!
+    studentId: String!
+    image: String!
+  ): AddResponse!
 
-	editFaculty(
-		facultyId: String!
-		adminId: String!
-		password: String
-		username: String
-		name: String
-	): AddResponse!
+  editFaculty(
+    facultyId: String!
+    adminId: String!
+    password: String
+    username: String
+    name: String
+  ): AddResponse!
 
-	editStudent(
-		adminId: String!
-		studentId: String!
-		registerno: String
-		name: String
-		dob: String
-		year: Int
-		section: String
-	): AddResponse!
+  editStudent(
+    adminId: String!
+    studentId: String!
+    registerno: String
+    name: String
+    dob: String
+    year: Int
+    section: String
+  ): AddResponse!
 
-	editCourse(
-		adminId: String!
-		courseId: String!
-		coursename: String
-		coursecode: String
-		regulation: Int
-		facultyId: String
-		studentsId: [String]
-	): AddResponse!
+  editCourse(
+    adminId: String!
+    courseId: String!
+    coursename: String
+    coursecode: String
+    regulation: Int
+    facultyId: String
+    studentsId: [String]
+  ): AddResponse!
 
-	deleteFaculty(facultyId: String!, adminId: String!): AddResponse!
+  deleteFaculty(facultyId: String!, adminId: String!): AddResponse!
 
-	deleteStudent(studentId: String!, adminId: String!): AddResponse!
+  deleteStudent(studentId: String!, adminId: String!): AddResponse!
 
-	deleteCourse(courseId: String!, adminId: String!): AddResponse!
+  deleteCourse(courseId: String!, adminId: String!): AddResponse!
 
-	deleteRecords(adminId: String!, recordId: String!): Boolean
+  deleteRecords(adminId: String!, recordId: String!): Boolean
 }
 
 type SOWResponse {
-	pdf: String
-	errors: [Error!]
+  pdf: String
+  errors: [Error!]
 }
 
 type Record {
-	student: Student!
-	faculty: Faculty!
-	course: Course!
-	points: Int!
-	date: String!
-	id: String!
+  student: Student!
+  faculty: Faculty!
+  course: Course!
+  points: Int!
+  date: String!
+  id: String!
 }
 
 type CSVResponse {
-	csv: String
+  csv: String
 }
 
 type RecordResponse {
-	records: [Record]
-	csv: String
+  records: [Record]
+  csv: String
 }
 
 type Student {
-	id: String!
-	registerno: String!
-	name: String!
-	dob: String!
-	year: Int!
-	section: String!
-	totalMarks: TotalMarks
-	isSow:Boolean
+  id: String!
+  registerno: String!
+  name: String!
+  dob: String!
+  year: Int!
+  section: String!
+  totalMarks: TotalMarks
+  isSow: Boolean
 }
 type TotalMarks {
-	totalMarks: Int
-	id: String
+  totalMarks: Int
+  id: String
 }
 
 type Faculty {
-	id: String!
-	username: String!
-	name: String!
+  id: String!
+  username: String!
+  name: String!
 }
 
 type Course {
-	id: String!
-	coursename: String!
-	coursecode: String!
-	regulation: Int!
-	faculty: Faculty!
-	students: [Student]
+  id: String!
+  coursename: String!
+  coursecode: String!
+  regulation: Int!
+  faculty: Faculty!
+  students: [Student]
 }
 
 type AddResponse {
-	id: String
-	errors: [Error!]
+  id: String
+  errors: [Error!]
 }
 
 type AdminAuthResponse {
-	id: String
-	errors: [Error!]
+  id: String
+  errors: [Error!]
 }
 
 type AuthResponse {
-	id: String
-	name: String
-	username: String
-	errors: [Error!]
-	accountType: String
+  id: String
+  name: String
+  username: String
+  errors: [Error!]
+  accountType: String
 }
 
 type Error {
-	path: String
-	errorCode: String
-	message: String
+  path: String
+  errorCode: String
+  message: String
 }

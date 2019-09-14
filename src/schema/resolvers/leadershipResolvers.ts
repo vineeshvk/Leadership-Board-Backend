@@ -2,14 +2,15 @@ import { Buffer } from 'buffer';
 import { writeFile } from 'fs';
 import * as PDFDocument from 'pdfkit';
 import { getRepository } from 'typeorm';
-import { promisify } from 'util';
+import { promisify, print } from 'util';
+import * as __ from 'lodash';
 import {
   ADMIN_NOT_EXISTS,
   COURSE_NOT_FOUND,
   FACULTY_NOT_FOUND,
   NO_ACCESS,
   SOMETHING_WRONG,
-  STUDENT_NOT_FOUND
+  STUDENT_NOT_FOUND,
 } from '../../config/Errors';
 import { Admin } from '../../entity/Admin';
 import { Course } from '../../entity/Course';
@@ -24,9 +25,10 @@ const resolvers = {
     viewRecords,
     viewRecordsCSV: viewRecords,
     calculateStarOfWeek,
-    getStudentTotalMarks
+    getStudentTotalMarks,
+    getConsolidateMarks,
   },
-  Mutation: { addRecord, deleteRecords }
+  Mutation: { addRecord, deleteRecords },
 };
 
 //Query
@@ -66,8 +68,7 @@ const getAllRecords = async () => {
 
 const filterRecords = (
   { date, coursename, facultyId, year, section }: viewRecordsArgsType,
-  leadershipRecord: LeadershipRecord[],
-  isSowNull?:boolean
+  leadershipRecord: LeadershipRecord[]
 ) => {
   let records = leadershipRecord;
 
@@ -83,7 +84,7 @@ const filterRecords = (
 
   if (section)
     records = records.filter(record => record.student.section === section);
-  
+
   return records;
 };
 
@@ -117,50 +118,42 @@ async function calculateStarOfWeek(
 
   const dateRange = getDaysArray(startDate, endDate);
 
-  recordRepo = filterRecords({ year, section }, recordRepo,true);
-  // recordRepo.forEach(async ({ student }) => {
-  //   student.isSow = null;
-  //   await student.save();
-  // });
-  
-  for(const {student} of recordRepo){
-    student.isSow = null
-    await student.save()
-    console.log(student.name);
-    
+  recordRepo = filterRecords({ year, section }, recordRepo);
+
+  const students = await Student.find({
+    where: { isSow: true, year, section },
+  });
+
+  for (const student of students) {
+    student.isSow = null;
+    await student.save();
   }
-  console.log(recordRepo);
-  
+
   let recordRepoDate = recordRepo.filter(record =>
     dateRange.includes(record.date)
   );
 
   if (recordRepoDate.length === 0) {
     return {
-      errors: [{ ...SOMETHING_WRONG, message: `No Entries with in the dates` }]
+      errors: [{ ...SOMETHING_WRONG, message: `No Entries with in the dates` }],
     };
   }
 
   const combinedRecord = combineRecordsFunction(recordRepoDate)[0];
+
   combinedRecord.student.isSow = true;
   await combinedRecord.student.save();
-  console.log(combinedRecord.student);
-  const stu =await Student.findOne({id:combinedRecord.student.id})
-  console.log(stu);
-  console.log("from stud");
-  console.log(recordRepo);
-  
-  
+
   const convertToPDFAsync = promisify<any, { result: string }>(convertToPDF);
   const studentImage = await StudentImage.findOne({
-    studentId: combinedRecord.student.id
+    studentId: combinedRecord.student.id,
   });
 
   const { result } = await convertToPDFAsync({
     data: combinedRecord,
     startDate,
     endDate,
-    image: studentImage.image
+    image: studentImage.image,
   });
 
   return { pdf: result };
@@ -231,17 +224,23 @@ const convertToPDF = (
     .fontSize(24)
     .text('SNS College of Technology', 145, 33, {
       align: 'center',
-      width: 325
+      width: 325,
     });
+
+  doc.fontSize(15).text('(An Autonomous Institution)', 145, 55, {
+    align: 'center',
+    width: 325,
+  });
+
   doc
     .fontSize(18)
-    .text('Coimbatore - 35', 145, 65, { width: 325, align: 'center' });
+    .text('Coimbatore - 35', 145, 80, { width: 325, align: 'center' });
 
   doc
     .fontSize(18)
     .text('Department of Computer Science & Engineering (UG & PG)', 18, 132, {
       width: 570,
-      align: 'center'
+      align: 'center',
     });
   doc
     .font('Times-Bold')
@@ -255,9 +254,16 @@ const convertToPDF = (
     .fontSize(18)
     .text(`${startDate} to ${endDate}`, 18, 289, {
       width: 570,
-      align: 'center'
+      align: 'center',
     });
-  doc.text('III CSE C', 18, 322, { width: 570, align: 'center' });
+  doc.text(
+    `Batch ${data.student.year} - ${data.student.year + 4} CSE ${
+      data.student.section
+    }`,
+    18,
+    322,
+    { width: 570, align: 'center' }
+  );
 
   doc
     .font('Times-Bold')
@@ -297,7 +303,7 @@ const convertToPDF = (
   });
 };
 
-/* ------------------------------GET_STUDENT_TOTAL_MARK----------------------------------------- */
+/* -----------------------------GET_STUDENT_TOTAL_MARK------------------------------- */
 async function getStudentTotalMarks(_, { studentId }) {
   let student: Student[] | Student = null;
   if (studentId) {
@@ -311,6 +317,68 @@ async function getStudentTotalMarks(_, { studentId }) {
   console.log(student);
 
   return student;
+}
+
+/* ------------------------------GET_CONSOLIDATE_MARKS--------------------------------- */
+async function getConsolidateMarks(
+  _,
+  { year, section, startDate, endDate }: calculateStarOfWeekArgTypes
+) {
+  let recordRepo = await getAllRecords();
+  recordRepo = filterRecords({ year, section }, recordRepo);
+  const dateRange = getDaysArray(startDate, endDate);
+
+  let courses = await Course.find({ where: { regulation: year } });
+  let students = await Student.find({
+    order: { registerno: 'ASC' },
+    where: { year, section },
+  });
+  courses = __.uniqBy(courses, 'coursecode');
+
+  recordRepo = recordRepo.filter(record => dateRange.includes(record.date));
+
+  let consolidate = 'Registerno';
+  courses.forEach(course => {
+    consolidate += `,${course.coursename}`;
+  });
+  consolidate += ',Total';
+
+  students.forEach(student => {
+    consolidate += `\n${student.registerno},`;
+    let totalMark = 0;
+    courses.forEach(course => {
+      const indexes = __.filter(
+        __.range(recordRepo.length),
+        (i: number) =>
+          recordRepo[i].course.coursecode === course.coursecode &&
+          recordRepo[i].student.registerno === student.registerno
+      );
+      /*const index = recordRepo.findIndex(
+        record =>
+          record.course.coursecode === course.coursecode &&
+          record.student.registerno === student.registerno
+      ); */
+      let mark = 0;
+      indexes.forEach(index => {
+        mark += recordRepo[index].points;
+        totalMark += recordRepo[index].points;
+      });
+
+      if (indexes === []) {
+        consolidate += ',';
+      } else {
+        consolidate += `${mark},`;
+      }
+      /*       if (index === -1) {
+        consolidate += ',';
+      } else {
+        totalMark += recordRepo[index].points;
+        consolidate += `${recordRepo[index].points},`;
+      } */
+    });
+    consolidate += `${totalMark}`;
+  });
+  return consolidate;
 }
 
 //Mutation
@@ -345,6 +413,11 @@ async function addRecord(
       student.totalMarks.totalMarks += points;
     }
 
+    if (!points || !date)
+      return {
+        errors: [{ ...SOMETHING_WRONG, message: `Points or date missing` }],
+      };
+
     await student.totalMarks.save();
     await student.save();
 
@@ -353,7 +426,7 @@ async function addRecord(
       student,
       faculty,
       course,
-      points
+      points,
     });
 
     await record.save();
